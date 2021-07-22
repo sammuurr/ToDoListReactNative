@@ -1,5 +1,6 @@
 import React, { Component} from 'react';
 import { Type, plainToClassFromExist} from 'class-transformer';
+import "reflect-metadata";
 
 
 
@@ -24,22 +25,24 @@ export class GroupList {
   }
 
 
-export async function getData () {
+export function getData () {
 
-  const response = await fetch("http://mobile-dev.oblakogroup.ru/candidate/quseinovsamur/list");
-  const data = await response.json();
-  const serlizationData =  plainToClassFromExist([GroupList] ,data);
+  var jsonData 
 
+  fetch("http://mobile-dev.oblakogroup.ru/candidate/quseinovsamur/list")
+    .then(response => response.json())
+    .then(json => jsonData = json)
+    .catch(error => console.log('error', error));
+  
+  const serlizationData =  plainToClassFromExist([GroupList] ,jsonData);
+ 
 
-
-  console.log(" DTFCVGHBJNMKLJHGF" )
-  console.log(serlizationData)
   return(serlizationData)
 
 }
 
 
-export async function changeData (listId: number, toDoId: number, sost: boolean){
+export function changeData (listId: number, toDoId: number, sost: boolean){
 
   
   var formdata = new FormData();
@@ -49,24 +52,61 @@ export async function changeData (listId: number, toDoId: number, sost: boolean)
   }
   var formdata = new FormData();
   formdata.append("checked", bool);
+  var jsonData = null
 
- 
-  const response = await fetch("http://mobile-dev.oblakogroup.ru/candidate/quseinovsamur/list/"+listId+"/todo/"+toDoId, {
+  fetch("http://mobile-dev.oblakogroup.ru/candidate/quseinovsamur/list/"+listId+"/todo/"+toDoId, {
     method: 'PATCH',
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded"
-    },
-    body: formdata,
-    redirect: 'follow'
-  })
+    redirect: 'follow',
+    body: formdata
+})
+  .then(response => response.json())
+  .then(json => jsonData = json)
+  .catch(error => console.log('error', error));
 
-  const serlizationData = await plainToClassFromExist([GroupList], response.json());
+
+  const serlizationData = plainToClassFromExist([GroupList], jsonData);
 
   if (serlizationData != null || serlizationData || [GroupList] || serlizationData != [] ){
     return true
   }else{
     return false
   }
-  
+}
+
+
+
+export function createNewTodos(id: number, text: string){
+  var formdata = new FormData();
+  formdata.append("text", text);
+  var jsonData = null
+
+  fetch("http://mobile-dev.oblakogroup.ru/candidate/quseinovsamur/list/"+id+"/todo", {
+      method: 'POST',
+      redirect: 'follow',
+      body: formdata
+  })
+    .then(response => response.json())
+    .then(json => jsonData = json)
+    .catch(error => console.log('error', error));
+
+  const serlizationData = plainToClassFromExist([GroupList], jsonData);
+
+  if (serlizationData != null || serlizationData || [GroupList] || serlizationData != [] ){
+    return true
+  }else{
+    return false
+  }
+}
+
+export function deleteTodos (listId: number, toDoId: number){
+
+
+  fetch("http://mobile-dev.oblakogroup.ru/candidate/quseinovsamur/list/"+listId+"/todo/"+toDoId, {
+    method: 'DELETE',
+    redirect: 'follow',
+})
+  .then(response => console.log(response.url))
+  .then(json => console.log(json))
+  .catch(error => console.log('error', error));
 
 }
