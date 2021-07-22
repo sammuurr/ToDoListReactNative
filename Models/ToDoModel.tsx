@@ -104,8 +104,35 @@ export function createNewTodos(id: number, text: string){
 
 export function deleteTodos (listId: number, toDoId: number){
 
-
   fetch("http://mobile-dev.oblakogroup.ru/candidate/quseinovsamur/list/"+listId+"/todo/"+toDoId, {
+    method: 'DELETE',
+    redirect: 'follow',
+})
+  .then(response => console.log(response.url))
+  .then(json => console.log(json))
+  .catch(error => console.log('error', error));
+
+}
+
+export function createList (title: string){
+
+  var formdata = new FormData();
+  formdata.append("title", title);
+
+  fetch("http://mobile-dev.oblakogroup.ru/candidate/quseinovsamur/list", {
+    method: 'POST',
+    redirect: 'follow',
+    body: formdata
+})
+  .then(response => console.log(response.url))
+  .then(json => console.log(json))
+  .catch(error => console.log('error', error));
+
+}
+
+export function deleteList (id: number){
+
+  fetch("http://mobile-dev.oblakogroup.ru/candidate/quseinovsamur/list/"+id, {
     method: 'DELETE',
     redirect: 'follow',
 })

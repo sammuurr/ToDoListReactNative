@@ -1,17 +1,17 @@
 import React, {useState} from "react"
-import { TouchableOpacity, Alert, View, Text} from 'react-native';
+import { TouchableOpacity, Alert, View} from 'react-native';
 import { NavigationContainer } from "@react-navigation/native"
 import { createStackNavigator} from "@react-navigation/stack"
 import { List } from 'react-native-paper';
 import "reflect-metadata";
 import GLOBAL from "../Models/GLOBAL";
-import { createNewTodos, changeData} from "../Models/ToDoModel"
-import Animated from 'react-native-reanimated';
+import { createNewTodos, changeData, createList, deleteList} from "../Models/ToDoModel"
 import BottomSheet from 'reanimated-bottom-sheet';
 
 
 import AddNewTodos from "../Views/AddNewTodosView"
 import ToDoList from "../Views/ToDoList"
+import AddNewList from "../Views/AddNewList"
 
 
 const Stack = createStackNavigator()
@@ -19,19 +19,59 @@ const Stack = createStackNavigator()
 
 export default function Navigation(){
 
+
+
     const renderContent = () => (
-        <View
+        < View
           style={{
-            backgroundColor: 'white',
+            backgroundColor: '#F5F5F5',
             padding: 16,
-            height: 450,
-          }}
-        >
-          <Text>Swipe down to close</Text>
+            height: 450,       
+          }}>
+
+        {
+            GLOBAL.screen2.state.myData.map((list, pos) => {
+                return <TouchableOpacity key={pos + 100} onPress={() => {
+                    Alert.alert("Подтвердите удаление","Вы действительно хотите удалить ? Данные нельзя будет восстановить", [
+                        {
+                            text: "Нет",
+                            style: "cancel",
+                        },
+                        {
+                            text: "Да",
+                            onPress: () => {
+                                deleteList(GLOBAL.screen2.state.myData[pos].id)
+                            },
+                            style: "cancel",
+                        }
+                    ])
+                }}>
+                    <List.Item key={pos} title={list.title} right={
+                        props => <List.Icon color="#AB6C94" icon="trash-can-outline" />}>
+
+                    </List.Item>
+                </TouchableOpacity>
+            })
+    
+        }
+        <TouchableOpacity  onPress={() => {
+            GLOBAL.screen2.props.navigation.navigate("AddNewList")
+        }}>
+            <List.Item  title="Новая категория" titleStyle={{ color:"gray" }} right={
+                props => <List.Icon color="gray" icon="plus" />}>
+
+            </List.Item>
+        </TouchableOpacity>
+
+        </View>
+      );
+      const renderFaceContent = () => (
+        < View>
         </View>
       );
     
-      const sheetRef = React.useRef(null);
+    const sheetRef = React.useRef(null);
+    const [isStartEnabled, setStartValue] = useState(false)
 
     return(
         <NavigationContainer>
@@ -85,6 +125,7 @@ export default function Navigation(){
                         headerRight: () => (
                             <TouchableOpacity onPress={() => {
                                 //Alert.alert("Ошибка", "Внимание! Данное функция находится в процессе разработки !")
+                                setStartValue(true)
                                 sheetRef.current.snapTo(0)
                             }}>
                             <List.Icon color="gray" icon="arrange-send-to-back" />
@@ -95,13 +136,46 @@ export default function Navigation(){
                     }}
                     
                 />
+                <Stack.Screen
+                    name="AddNewList"
+                    component={AddNewList}
+                    options={{
+                        title: "",
+                        headerStyle:{
+                        },
+                        headerRight: () => (
+                            <TouchableOpacity onPress={() => {
+                                if (GLOBAL.screen3.state.text.trim() === "") {
+                                    Alert.alert("Ошибка", "Текстовое поле пустое ! ") 
+                                }else{
+                                    createList(GLOBAL.screen3.state.text)
+                                    GLOBAL.screen3.props.navigation.reset({
+                                        index: 0,
+                                        routes: [{ name: "AddNewList" }],
+                                    });
+                                    
+                                    GLOBAL.screen3.props.navigation.goBack()
+                                }
+                            }}>
+                            <List.Icon color="#146E90" icon="check" />
+                            
+                            </TouchableOpacity>
+                            
+                          ),
+                    }}
+                    
+                />
                 
             </Stack.Navigator>
-            <BottomSheet
+            
+    <BottomSheet
         ref={sheetRef}
-        snapPoints={[450, 300, 0]}
+        initialSnap={0}
+        snapPoints={[isStartEnabled ? "40%" : 0, 0, 0]}
         borderRadius={20}
-        renderContent={renderContent}
+        renderContent={isStartEnabled ? renderContent : renderFaceContent}
+        
+        
       />
         </NavigationContainer>
     )
