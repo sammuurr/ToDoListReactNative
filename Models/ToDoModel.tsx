@@ -42,16 +42,20 @@ export function getData () {
 }
 
 
-export function changeData (listId: number, toDoId: number, sost: boolean){
-
+export function changeData (listId: number, toDoId: number, sost?: boolean, text?: string){
   
   var formdata = new FormData();
   var bool = "false"
   if (sost) {
     bool = "true"
   }
+
   var formdata = new FormData();
   formdata.append("checked", bool);
+  if (text != null) {
+    formdata.append("text", text);
+  }
+  
   var jsonData = null
 
   fetch("http://mobile-dev.oblakogroup.ru/candidate/quseinovsamur/list/"+listId+"/todo/"+toDoId, {

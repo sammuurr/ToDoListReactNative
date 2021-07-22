@@ -7,6 +7,8 @@ import { plainToClassFromExist} from 'class-transformer';
 import "reflect-metadata";
 import {Todos, GroupList, changeData, deleteTodos} from "../Models/ToDoModel"
 import { useNavigation } from '@react-navigation/native'
+import GLOBAL from "../Models/GLOBAL";
+
 
 
 
@@ -19,8 +21,11 @@ export default function(props: any) {
 class ToDoList extends Component{
 
   state = {
-    myData: [GroupList]
+    myData: [GroupList],
+    element: Todos,
+    isEdit: false
   }
+
 
 
   componentDidMount = async() => {
@@ -36,16 +41,8 @@ class ToDoList extends Component{
 
   render(){
 
-    var editBtn = [
-      {
-        component: <List.Icon icon="pencil-outline" />,
-        backgroundColor: "#FAFAFA",
-        onPress: () => {
-          Alert.alert("Ошибка", "Внимание! Данное функция находится в процессе разработки !")
-        }
-      }
-    ]
     const { navigation } = this.props;
+    GLOBAL.screen2 = this
 
     return (
       <SafeAreaView style={styles.container}>
@@ -81,7 +78,18 @@ class ToDoList extends Component{
                               
                             }
                           }
-                        ]} left={editBtn}>
+                        ]} left={[{
+                          component: <List.Icon icon="pencil-outline" />,
+                          backgroundColor: "#FAFAFA",
+                          onPress: () => {
+                            this.setState({
+                              element: this.state.myData[pos].todos[poss],
+                              isEdit: false
+                            })
+                            navigation.push('NewTodosScreen')
+
+                          }
+                        }]}>
                         <TouchableOpacity key={poss + 100} onPress={ async () => {
                           
                           var flag = await changeData(todos.list_id, todos.id, true)
@@ -126,7 +134,23 @@ class ToDoList extends Component{
                                 }
                               }
                             }
-                          ]} left={editBtn}>
+                          ]} left={[{
+                            component: <List.Icon icon="pencil-outline" />,
+                            backgroundColor: "#FAFAFA",
+                            onPress: () => {
+                              
+                              this.setState({
+                                element: this.state.myData[pos].todos[poss],
+                                isEdit: false
+                              })
+                              
+
+
+                              console.log(this.state.myData[pos].todos[pos])
+                              navigation.push('NewTodosScreen')
+  
+                            }
+                          }]}>
                           <TouchableOpacity key={poss + 100} onPress={async () => {
                             var flag = await changeData(todos.list_id, todos.id, false)
 
@@ -163,7 +187,10 @@ class ToDoList extends Component{
           <FAB
             icon='plus'
             onPress={() => {
-              navigation.navigate("NewTodosScreen")
+              this.setState({
+                isEdit: true
+              })
+              navigation.push('NewTodosScreen')
             }}
             style={{
               position: 'absolute',
