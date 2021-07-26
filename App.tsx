@@ -1,6 +1,5 @@
 import React, { Component} from 'react';
 import { StyleSheet, View} from 'react-native';
-import ToDoList from './Views/ToDoList';
 import MainStack from './Navigation/NavigationController'
 
 

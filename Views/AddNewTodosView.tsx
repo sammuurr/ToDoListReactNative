@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { StyleSheet, SafeAreaView, ScrollView, View, TouchableOpacity, TextInput} from 'react-native';
-import { GroupList, createNewTodos, Todos } from "../Models/ToDoModel"
+import GroupList from "../Models/GroupList"
+import Todos from "../Models/Todos"
 import { plainToClassFromExist } from 'class-transformer';
 import { useNavigation } from '@react-navigation/native'
 import { List } from 'react-native-paper';
@@ -9,15 +10,7 @@ import "reflect-metadata";
 
 
 
-
-export default function(props: any) {
-  const navigation = useNavigation()
-
-  return <AddNewTodos {...props} navigation={navigation} />;
-}
-
-
-export class AddNewTodos extends Component{
+export default class AddNewTodos extends Component{
     state = {
         myData: [GroupList],
         number: 0,

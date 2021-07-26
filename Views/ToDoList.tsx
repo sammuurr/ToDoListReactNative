@@ -1,24 +1,22 @@
 import { StatusBar } from 'expo-status-bar';
-import React, { Component} from 'react';
-import { StyleSheet, SafeAreaView, ScrollView, View, Image, TouchableOpacity, Alert} from 'react-native';
+import React from 'react';
+import { StyleSheet, SafeAreaView, ScrollView, View, Image, TouchableOpacity} from 'react-native';
 import { List, FAB, Portal, Provider } from 'react-native-paper';
 import Swipeout from 'react-native-swipeout';
 import { plainToClassFromExist} from 'class-transformer';
 import "reflect-metadata";
-import {Todos, GroupList, changeData, deleteTodos} from "../Models/ToDoModel"
-import { useNavigation } from '@react-navigation/native'
+import {deleteTodos} from "../services/ToDoList/index"
+
+
+import GroupList from "../Models/GroupList"
+import Todos from "../Models/Todos"
 import GLOBAL from "../Models/GLOBAL";
+import NavigationProps from '../Models/NavigationModel';
 
 
 
 
-export default function(props: any) {
-  const navigation = useNavigation();
-
-  return <ToDoList {...props} navigation={navigation} />;
-}
-
-class ToDoList extends Component{
+export default class ToDoList extends React.Component<NavigationProps> {
 
   state = {
     myData: [GroupList],
@@ -41,7 +39,6 @@ class ToDoList extends Component{
 
   render(){
 
-    const { navigation } = this.props;
     GLOBAL.screen2 = this
 
     return (
@@ -51,8 +48,7 @@ class ToDoList extends Component{
           <View style={styles.container}>
 
             {
-              this.state.myData.map((list, pos) => {
-
+              this.state.myData.map((list, pos: number) => {
                 var accordionArray: Todos[] = []
 
                 return <List.Section key={pos} title={list.title} style={styles.section} titleStyle={{
@@ -60,7 +56,7 @@ class ToDoList extends Component{
                 }}>
                   {
 
-                    (list?.todos ?? []).map((todos, poss) =>{
+                    (list?.todos ?? []).map((todos: Todos, poss: number) =>{
 
                       if (!todos.checked){
                         return <Swipeout style={styles.swipe} key={poss + 23} right={[
@@ -74,8 +70,6 @@ class ToDoList extends Component{
                                 this.componentDidMount()
                               }
                               
-
-                              
                             }
                           }
                         ]} left={[{
@@ -86,13 +80,11 @@ class ToDoList extends Component{
                               element: this.state.myData[pos].todos[poss],
                               isEdit: false
                             })
-                            navigation.push('NewTodosScreen')
+                            this.props.navigation.navigate('NewTodosScreen')
 
                           }
                         }]}>
                         <TouchableOpacity key={poss + 100} onPress={ async () => {
-                          
-                          var flag = await changeData(todos.list_id, todos.id, true)
 
                             for (let i = 0; i < 5; i++) {
                               this.componentDidMount()
@@ -147,13 +139,11 @@ class ToDoList extends Component{
 
 
                               console.log(this.state.myData[pos].todos[pos])
-                              navigation.push('NewTodosScreen')
+                              this.props.navigation.navigate('NewTodosScreen')
   
                             }
                           }]}>
                           <TouchableOpacity key={poss + 100} onPress={async () => {
-                            var flag = await changeData(todos.list_id, todos.id, false)
-
 
                             for (let i = 0; i < 5; i++) {
                               this.componentDidMount()
@@ -190,7 +180,7 @@ class ToDoList extends Component{
               this.setState({
                 isEdit: true
               })
-              navigation.push('NewTodosScreen')
+              this.props.navigation.navigate('NewTodosScreen')
             }}
             style={{
               position: 'absolute',

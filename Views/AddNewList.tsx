@@ -2,17 +2,10 @@ import React, { Component } from 'react';
 import { StyleSheet, SafeAreaView, View, TextInput} from 'react-native';
 import GLOBAL from '../Models/GLOBAL';
 import "reflect-metadata";
-import { useNavigation } from '@react-navigation/native';
 
 
-export default function(props: any) {
-    const navigation = useNavigation()
-  
-    return <AddNewList {...props} navigation={navigation} />;
-}
 
-
-export class AddNewList extends Component{
+export default class AddNewList extends Component{
     state = {
         text: ""
     }

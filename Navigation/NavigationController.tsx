@@ -5,8 +5,9 @@ import { createStackNavigator} from "@react-navigation/stack"
 import { List } from 'react-native-paper';
 import "reflect-metadata";
 import GLOBAL from "../Models/GLOBAL";
-import { createNewTodos, changeData, createList, deleteList} from "../Models/ToDoModel"
+import { createNewTodos, changeData, createList, deleteList} from "../services/ToDoList/index"
 import BottomSheet from 'reanimated-bottom-sheet';
+import GroupList from "../Models/GroupList"
 
 
 import AddNewTodos from "../Views/AddNewTodosView"
@@ -30,7 +31,7 @@ export default function Navigation(){
           }}>
 
         {
-            GLOBAL.screen2.state.myData.map((list, pos) => {
+            GLOBAL.screen2.state.myData.map((list: GroupList, pos: number) => {
                 return <TouchableOpacity key={pos + 100} onPress={() => {
                     Alert.alert("Подтвердите удаление","Вы действительно хотите удалить ? Данные нельзя будет восстановить", [
                         {

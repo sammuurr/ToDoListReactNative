@@ -1,28 +1,7 @@
-import React, { Component} from 'react';
 import { Type, plainToClassFromExist} from 'class-transformer';
 import "reflect-metadata";
+import GroupList from "../../Models/GroupList"
 
-
-
-export class GroupList {
-    static id: number;
-    static title: string;
-    static candidate_id: number;
-    static created_at: string;
-    static updated_at: string;
-  
-    @Type(() => Todos)
-    static todos: Todos[];
-  }
-  
-  export class Todos {
-    id!: number;
-    text!: string;
-    list_id!: number;
-    checked!: boolean;
-    created_at!: string;
-    updated_at!: string;
-  }
 
 
 export function getData () {
