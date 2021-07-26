@@ -32,7 +32,7 @@ export default function Navigation(){
 
         {
             GLOBAL.screen2.state.myData.map((list: GroupList, pos: number) => {
-                return <TouchableOpacity key={pos + 100} onPress={() => {
+                return <TouchableOpacity key={list.id} onPress={() => {
                     Alert.alert("Подтвердите удаление","Вы действительно хотите удалить ? Данные нельзя будет восстановить", [
                         {
                             text: "Нет",
@@ -47,7 +47,7 @@ export default function Navigation(){
                         }
                     ])
                 }}>
-                    <List.Item key={pos} title={list.title} right={
+                    <List.Item key={list.id + 100}  title={list.title} right={
                         props => <List.Icon color="#AB6C94" icon="trash-can-outline" />}>
 
                     </List.Item>

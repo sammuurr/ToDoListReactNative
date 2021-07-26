@@ -5,7 +5,7 @@ import { List, FAB, Portal, Provider } from 'react-native-paper';
 import Swipeout from 'react-native-swipeout';
 import { plainToClassFromExist} from 'class-transformer';
 import "reflect-metadata";
-import {deleteTodos} from "../services/ToDoList/index"
+import {deleteTodos, changeData} from "../services/ToDoList/index"
 
 
 import GroupList from "../Models/GroupList"
@@ -14,12 +14,14 @@ import GLOBAL from "../Models/GLOBAL";
 import NavigationProps from '../Models/NavigationModel';
 
 
+const typeArrayGroupList:GroupList[]  = []
 
 
 export default class ToDoList extends React.Component<NavigationProps> {
 
+
   state = {
-    myData: [GroupList],
+    myData: typeArrayGroupList,
     element: Todos,
     isEdit: false
   }
@@ -51,7 +53,7 @@ export default class ToDoList extends React.Component<NavigationProps> {
               this.state.myData.map((list, pos: number) => {
                 var accordionArray: Todos[] = []
 
-                return <List.Section key={pos} title={list.title} style={styles.section} titleStyle={{
+                return <List.Section key={list.id + 100} title={list.title} style={styles.section} titleStyle={{
                   textTransform: "uppercase"
                 }}>
                   {
@@ -59,7 +61,7 @@ export default class ToDoList extends React.Component<NavigationProps> {
                     (list?.todos ?? []).map((todos: Todos, poss: number) =>{
 
                       if (!todos.checked){
-                        return <Swipeout style={styles.swipe} key={poss + 23} right={[
+                        return <Swipeout style={styles.swipe} key={todos.id + 200} right={[
                           {
                             component: <View style={{width: "100%", flex: 1, alignItems:"center", justifyContent:'center'}}><Image source={require('../assets/icons8-remove-24.png')} style={styles.button} /></View>,
                             backgroundColor: "#FAFAFA",
@@ -84,7 +86,8 @@ export default class ToDoList extends React.Component<NavigationProps> {
 
                           }
                         }]}>
-                        <TouchableOpacity key={poss + 100} onPress={ async () => {
+                        <TouchableOpacity key={todos.id + 300} onPress={ () => {
+                          changeData(todos.list_id, todos.id, true)
 
                             for (let i = 0; i < 5; i++) {
                               this.componentDidMount()
@@ -92,7 +95,7 @@ export default class ToDoList extends React.Component<NavigationProps> {
                         }}>
                           <List.Item
                             title={todos.text}
-                            key={poss}
+                            key={todos.id + 400}
                             left={props => <List.Icon {...props} icon="checkbox-blank-circle-outline" />}
                           />
                         </TouchableOpacity>
@@ -114,7 +117,7 @@ export default class ToDoList extends React.Component<NavigationProps> {
                     }>
                       {
                         accordionArray.map((todos, poss) => {
-                          return <Swipeout autoClose={true} style={styles.swipe} key={poss + 23} right={[
+                          return <Swipeout autoClose={true} style={styles.swipe} key={todos.id + 500} right={[
                             {
                               component: <View style={{width: "100%", flex: 1, alignItems:"center", justifyContent:'center'}}><Image source={require('../assets/icons8-remove-24.png')} style={styles.button} /></View>,
                               backgroundColor: "#FAFAFA",
@@ -143,7 +146,8 @@ export default class ToDoList extends React.Component<NavigationProps> {
   
                             }
                           }]}>
-                          <TouchableOpacity key={poss + 100} onPress={async () => {
+                          <TouchableOpacity key={todos.id + 600} onPress={() => {
+                            changeData(todos.list_id, todos.id, false)
 
                             for (let i = 0; i < 5; i++) {
                               this.componentDidMount()
@@ -157,7 +161,7 @@ export default class ToDoList extends React.Component<NavigationProps> {
                               color: "gray",
                             }}
                             title={todos.text}
-                            key={poss}
+                            key={todos.id + 700}
                             left={props => <List.Icon color="#146E90" icon="check" />}
                           />
                         </TouchableOpacity>
