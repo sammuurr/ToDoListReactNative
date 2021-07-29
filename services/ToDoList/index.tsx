@@ -1,24 +1,8 @@
-import { Type, plainToClassFromExist} from 'class-transformer';
+import { plainToClassFromExist} from 'class-transformer';
 import "reflect-metadata";
 import GroupList from "../../Models/GroupList"
+import { build } from '../../environment';
 
-
-
-export function getData () {
-
-  var jsonData 
-
-  fetch("http://mobile-dev.oblakogroup.ru/candidate/quseinovsamur/list")
-    .then(response => response.json())
-    .then(json => jsonData = json)
-    .catch(error => console.log('error', error));
-  
-  const serlizationData =  plainToClassFromExist([GroupList] ,jsonData);
- 
-
-  return(serlizationData)
-
-}
 
 
 export function changeData (listId: number, toDoId: number, sost?: boolean, text?: string){
@@ -37,7 +21,7 @@ export function changeData (listId: number, toDoId: number, sost?: boolean, text
   
   var jsonData = null
 
-  fetch("http://mobile-dev.oblakogroup.ru/candidate/quseinovsamur/list/"+listId+"/todo/"+toDoId, {
+  fetch(build.apiServerUrl + "/candidate/quseinovsamur/list/"+listId+"/todo/"+toDoId, {
     method: 'PATCH',
     redirect: 'follow',
     body: formdata
@@ -63,7 +47,7 @@ export function createNewTodos(id: number, text: string){
   formdata.append("text", text);
   var jsonData = null
 
-  fetch("http://mobile-dev.oblakogroup.ru/candidate/quseinovsamur/list/"+id+"/todo", {
+  fetch(build.apiServerUrl + "/candidate/quseinovsamur/list/"+id+"/todo", {
       method: 'POST',
       redirect: 'follow',
       body: formdata
@@ -83,7 +67,7 @@ export function createNewTodos(id: number, text: string){
 
 export function deleteTodos (listId: number, toDoId: number){
 
-  fetch("http://mobile-dev.oblakogroup.ru/candidate/quseinovsamur/list/"+listId+"/todo/"+toDoId, {
+  fetch(build.apiServerUrl + "/candidate/quseinovsamur/list/"+listId+"/todo/"+toDoId, {
     method: 'DELETE',
     redirect: 'follow',
 })
@@ -98,7 +82,7 @@ export function createList (title: string){
   var formdata = new FormData();
   formdata.append("title", title);
 
-  fetch("http://mobile-dev.oblakogroup.ru/candidate/quseinovsamur/list", {
+  fetch(build.apiServerUrl + "/candidate/quseinovsamur/list", {
     method: 'POST',
     redirect: 'follow',
     body: formdata
@@ -111,7 +95,7 @@ export function createList (title: string){
 
 export function deleteList (id: number){
 
-  fetch("http://mobile-dev.oblakogroup.ru/candidate/quseinovsamur/list/"+id, {
+  fetch(build.apiServerUrl + "/candidate/quseinovsamur/list/"+id, {
     method: 'DELETE',
     redirect: 'follow',
 })

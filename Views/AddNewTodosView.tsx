@@ -1,18 +1,24 @@
 import React, { Component } from 'react';
-import { StyleSheet, SafeAreaView, ScrollView, View, TouchableOpacity, TextInput} from 'react-native';
+import { StyleSheet, SafeAreaView, ScrollView, View, TouchableOpacity, TextInput, Alert} from 'react-native';
 import GroupList from "../Models/GroupList"
 import Todos from "../Models/Todos"
 import { plainToClassFromExist } from 'class-transformer';
-import { useNavigation } from '@react-navigation/native'
+
 import { List } from 'react-native-paper';
-import GLOBAL from '../Models/GLOBAL';
+import { setText, setParentList, setIsEdit} from '../Redux/features/AddNewTodos';
+import {setIsEdits} from '../Redux/features/ToDoList';
 import "reflect-metadata";
+import { store } from '../Redux/store';
+import NavigationProps from "../Models/NavigationModel"
+import { createNewTodos, changeData} from "../services/ToDoList/index"
+import { build } from '../environment';
 
 
+const typeArrayGroupList:GroupList[]  = []
 
-export default class AddNewTodos extends Component{
+export default class AddNewTodos extends Component<NavigationProps>{
     state = {
-        myData: [GroupList],
+        myData: typeArrayGroupList,
         number: 0,
         text: "",
         isEdit: true,
@@ -21,30 +27,67 @@ export default class AddNewTodos extends Component{
     
     
       componentDidMount = async() => {
+        this.props.navigation.setOptions({
+
+          headerRight: () => (<TouchableOpacity onPress={() => {
+            if (store.getState().addNewTodos.value.trim() === "") {
+
+              if (store.getState().addNewTodos.isEdit) {
+                  Alert.alert("Ошибка", "Текстовое поле пустое ! ")
+              }else{
+                  Alert.alert("Ошибка", "Измените изначальную заметку ! ")
+              }
+              
+          }else{
+              if (store.getState().addNewTodos.isEdit) {
+                  createNewTodos(store.getState().addNewTodos.parentList, store.getState().addNewTodos.value)
+              }else{
+                  changeData(store.getState().toDoList.element!.list_id, store.getState().toDoList.element!.id, false, store.getState().addNewTodos.value)
+              }
+              store.dispatch(setIsEdit(true))
+              store.dispatch(setIsEdits(true))
+
+              for (let i = 0; i < 5; i++) {
+                this.props.route.params.resetData()
+              }
+              this.props.navigation.goBack()
+          }
+          }}>
+              <List.Icon color="#146E90" icon="check" />
+          </TouchableOpacity>
+      )
+        })
+
     
-        const response = await fetch("http://mobile-dev.oblakogroup.ru/candidate/quseinovsamur/list");
+        const response = await fetch(build.apiServerUrl + "/candidate/quseinovsamur/list");
         const data = await response.json();
-        const serlizationData =  plainToClassFromExist([GroupList] ,data);
+        const serlizationData =  plainToClassFromExist( typeArrayGroupList ,data);
        
+        store.dispatch(setParentList(serlizationData[0].id))
+        store.dispatch(setIsEdit(store.getState().toDoList.isEdit))
+        
+
         this.setState({
           myData: serlizationData,
           number: serlizationData[0].id,
-          isEdit: GLOBAL.screen2.state.isEdit,
-          todos: GLOBAL.screen2.state.element
+
         })
       }
 
+    
 
     render(){
 
-      GLOBAL.screen1 = this
-
-
       const changeList = (number: number) => {
+        store.dispatch(setParentList(number))
+
         this.setState({
           number: number
         })
+        console.log(store.getState().toDoList.element)
+
       }
+      
     
       
 
@@ -54,9 +97,9 @@ export default class AddNewTodos extends Component{
 
 
               <View style={styles.section}>
-                <TextInput style={styles.input} placeholder="Название задачи" multiline={true} onChangeText={myText =>{ this.setState({ text:myText })}}>
+                <TextInput style={styles.input} placeholder="Название задачи" multiline={true} onChangeText={text =>{console.log(store.getState().toDoList.element); store.dispatch(setText(text))}}>
                   {
-                    !GLOBAL.screen2.state.isEdit ? GLOBAL.screen2.state.element.text : ""
+                    !store.getState().toDoList.isEdit ? store.getState().toDoList.element!.text : ""
                   }
                 </TextInput>
               </View>
@@ -75,7 +118,7 @@ export default class AddNewTodos extends Component{
                         <List.Item
                           title={list.title}
                           key={pos}
-                          right={props => <List.Icon color={this.state.number == list.id ? "#3A76F4" : "gray"} icon={this.state.number == list.id ? "circle-slice-8" : "checkbox-blank-circle-outline"} />}
+                          right={props => <List.Icon color={store.getState().addNewTodos.parentList == list.id ? "#3A76F4" : "gray"} icon={store.getState().addNewTodos.parentList == list.id ? "circle-slice-8" : "checkbox-blank-circle-outline"} />}
                         />
                       </TouchableOpacity>
                       )

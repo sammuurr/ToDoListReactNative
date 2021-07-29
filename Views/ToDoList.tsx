@@ -1,51 +1,208 @@
 import { StatusBar } from 'expo-status-bar';
 import React from 'react';
-import { StyleSheet, SafeAreaView, ScrollView, View, Image, TouchableOpacity} from 'react-native';
+import { StyleSheet, SafeAreaView, ScrollView, View, Image, TouchableOpacity, Alert, TouchableWithoutFeedback} from 'react-native';
 import { List, FAB, Portal, Provider } from 'react-native-paper';
 import Swipeout from 'react-native-swipeout';
-import { plainToClassFromExist} from 'class-transformer';
+import {build} from '../environment'
+
+
 import "reflect-metadata";
-import {deleteTodos, changeData} from "../services/ToDoList/index"
+import {deleteTodos, changeData, deleteList} from "../services/ToDoList/index"
+import BottomSheet from 'reanimated-bottom-sheet';
 
 
 import GroupList from "../Models/GroupList"
 import Todos from "../Models/Todos"
-import GLOBAL from "../Models/GLOBAL";
 import NavigationProps from '../Models/NavigationModel';
+import {setIsEdits, setElement, setGroupListData} from "../Redux/features/ToDoList"
+import { store } from '../Redux/store';
 
 
-const typeArrayGroupList:GroupList[]  = []
-
+var typeArrayGroupList:GroupList[]  = []
 
 export default class ToDoList extends React.Component<NavigationProps> {
 
 
+  reloadListAndData = () => {
+    fetch(build.apiServerUrl + "/candidate/quseinovsamur/list", {
+      method: 'GET',
+  })
+    .then(response => response.json())
+    .then(json => {this.setState({ myData:json }); store.dispatch(setGroupListData(json))})
+    .catch(error => console.log('error', error))
+
+    this.setState({
+      renderContent: () => (
+        < View
+          style={{
+            backgroundColor: '#F5F5F5',
+            padding: 16,
+            height: 450,       
+          }}>
+  
+        {
+            store.getState().toDoList.groupListData.map((list: GroupList, pos: number) => {
+                return <TouchableOpacity key={list.id} onPress={() => {
+                  this.sheetRef.current.snapTo(1)
+                    Alert.alert("Подтвердите удаление","Вы действительно хотите удалить ? Данные нельзя будет восстановить", [
+                        {
+                            text: "Нет",
+                            style: "cancel",
+                        },
+                        {
+                            text: "Да",
+                            onPress: () => {
+                                deleteList(store.getState().toDoList.groupListData[pos].id)
+                                for (let i = 0; i < 4; i++) {
+                                  this.reloadListAndData()
+                                }
+                            },
+                            style: "cancel",
+                        }
+                    ])
+                }}>
+                    <List.Item key={list.id + 100}  title={list.title} right={
+                        props => <List.Icon color="#AB6C94" icon="trash-can-outline" />}>
+  
+                    </List.Item>
+                </TouchableOpacity>
+            })
+    
+        }
+        <TouchableOpacity  onPress={() => {
+          this.sheetRef.current.snapTo(1)
+            this.props.navigation.navigate("AddNewList" ,{
+              resetData: () => {
+                this.reloadListAndData()
+              }
+            })
+        }}>
+            <List.Item  title="Новая категория" titleStyle={{ color:"gray" }} right={
+                props => <List.Icon color="gray" icon="plus" />}>
+  
+            </List.Item>
+        </TouchableOpacity>
+  
+        </View>)
+    })
+
+  } 
+
   state = {
     myData: typeArrayGroupList,
     element: Todos,
-    isEdit: false
+    isEdit: false,
+    isStartEnabled: false,
+    renderContent: () => (
+      < View
+        style={{
+          backgroundColor: '#F5F5F5',
+          padding: 16,
+          height: 450,       
+        }}>
+
+      {
+          store.getState().toDoList.groupListData.map((list: GroupList, pos: number) => {
+              return <TouchableOpacity key={list.id} onPress={() => {
+                this.sheetRef.current.snapTo(1)
+                  Alert.alert("Подтвердите удаление","Вы действительно хотите удалить ? Данные нельзя будет восстановить", [
+                      {
+                          text: "Нет",
+                          style: "cancel",
+                      },
+                      {
+                          text: "Да",
+                          onPress: () => {
+                              deleteList(store.getState().toDoList.groupListData[pos].id)
+                              for (let i = 0; i < 4; i++) {
+                                this.reloadListAndData()
+                              }
+                          },
+                          style: "cancel",
+                      }
+                  ])
+              }}>
+                  <List.Item key={list.id + 100}  title={list.title} right={
+                      props => <List.Icon color="#AB6C94" icon="trash-can-outline" />}>
+
+                  </List.Item>
+              </TouchableOpacity>
+          })
+  
+      }
+      <TouchableOpacity  onPress={() => {
+        this.sheetRef.current.snapTo(1)
+          this.props.navigation.navigate("AddNewList" ,{
+            resetData: () => {
+              this.reloadListAndData()
+            }
+          })
+      }}>
+          <List.Item  title="Новая категория" titleStyle={{ color:"gray" }} right={
+              props => <List.Icon color="gray" icon="plus" />}>
+
+          </List.Item>
+      </TouchableOpacity>
+
+      </View>),
+      renderFaceContent: () => (
+        <View>
+        </View>
+      )
+
+
   }
 
 
+  componentDidMount =() => {
+    this.props.navigation.setOptions({
+      headerRight: () => (
+        <TouchableOpacity onPress={() => {
 
-  componentDidMount = async() => {
-
-    const response = await fetch("http://mobile-dev.oblakogroup.ru/candidate/quseinovsamur/list");
-    const data = await response.json();
-    const serlizationData =  plainToClassFromExist([GroupList] ,data);
-   
-    this.setState({
-      myData: serlizationData
+            this.setState({
+              isStartEnabled: true
+            })
+            this.sheetRef.current.snapTo(0)
+        }}>
+        <List.Icon color="gray" icon="arrange-send-to-back" />
+        
+        </TouchableOpacity>
+    )
     })
+
+    fetch(build.apiServerUrl + "/candidate/quseinovsamur/list", {
+        method: 'GET',
+    })
+      .then(response => response.json())
+      .then(json => {this.setState({ myData:json }); store.dispatch(setGroupListData(json))})
+      .catch(error => console.log('error', error))
+    
   }
+
+
+    sheetRef:React.MutableRefObject<null> = React.createRef()
 
   render(){
 
-    GLOBAL.screen2 = this
+
+    const reloadData = () => {
+      fetch(build.apiServerUrl + "/candidate/quseinovsamur/list", {
+        method: 'GET'
+    })
+      .then(response => response.json())
+      .then(json => {this.setState({ myData:json }); store.dispatch(setGroupListData(json))})
+      .catch(error => console.log('error', error))
+    }
+    
+
+
 
     return (
       <SafeAreaView style={styles.container}>
-        <ScrollView style={styles.scrol}>
+
+        
+        {!this.state.isStartEnabled ? <ScrollView style={styles.scrol}
+        >
           
           <View style={styles.container}>
 
@@ -66,10 +223,10 @@ export default class ToDoList extends React.Component<NavigationProps> {
                             component: <View style={{width: "100%", flex: 1, alignItems:"center", justifyContent:'center'}}><Image source={require('../assets/icons8-remove-24.png')} style={styles.button} /></View>,
                             backgroundColor: "#FAFAFA",
                             onPress: () => {
-                              deleteTodos(this.state.myData[pos].id, this.state.myData[pos].todos[poss].id)
+                              deleteTodos(store.getState().toDoList.groupListData[pos].id, store.getState().toDoList.groupListData[pos].todos[poss].id)
                               
-                              for (let i = 0; i < 5; i++) {
-                                this.componentDidMount()
+                              for (let i = 0; i < 4; i++) {
+                                reloadData()
                               }
                               
                             }
@@ -78,20 +235,24 @@ export default class ToDoList extends React.Component<NavigationProps> {
                           component: <List.Icon icon="pencil-outline" />,
                           backgroundColor: "#FAFAFA",
                           onPress: () => {
-                            this.setState({
-                              element: this.state.myData[pos].todos[poss],
-                              isEdit: false
+                            
+                            store.dispatch(setElement(todos))
+                            store.dispatch(setIsEdits(false))
+
+                            this.props.navigation.navigate('NewTodosScreen', {
+                              resetData: () => {
+                                reloadData()
+                              }
                             })
-                            this.props.navigation.navigate('NewTodosScreen')
 
                           }
                         }]}>
                         <TouchableOpacity key={todos.id + 300} onPress={ () => {
                           changeData(todos.list_id, todos.id, true)
 
-                            for (let i = 0; i < 5; i++) {
-                              this.componentDidMount()
-                            }
+                          for (let i = 0; i < 4; i++) {
+                                reloadData()
+                          }
                         }}>
                           <List.Item
                             title={todos.text}
@@ -122,11 +283,11 @@ export default class ToDoList extends React.Component<NavigationProps> {
                               component: <View style={{width: "100%", flex: 1, alignItems:"center", justifyContent:'center'}}><Image source={require('../assets/icons8-remove-24.png')} style={styles.button} /></View>,
                               backgroundColor: "#FAFAFA",
                               onPress: async() => {
-                                deleteTodos(this.state.myData[pos].id, this.state.myData[pos].todos[poss].id)
+                                deleteTodos(store.getState().toDoList.groupListData[pos].id, store.getState().toDoList.groupListData[pos].todos[poss].id)
                                 
-                                for (let i = 0; i < 5; i++) {
-                                  this.componentDidMount()
-                                }
+                                for (let i = 0; i < 4; i++) {
+                                reloadData()
+                              }
                               }
                             }
                           ]} left={[{
@@ -134,24 +295,23 @@ export default class ToDoList extends React.Component<NavigationProps> {
                             backgroundColor: "#FAFAFA",
                             onPress: () => {
                               
-                              this.setState({
-                                element: this.state.myData[pos].todos[poss],
-                                isEdit: false
-                              })
+                              store.dispatch(setElement(todos))
+                              store.dispatch(setIsEdits(false))
                               
-
-
-                              console.log(this.state.myData[pos].todos[pos])
-                              this.props.navigation.navigate('NewTodosScreen')
+                              this.props.navigation.navigate('NewTodosScreen', {
+                                resetData: () => {
+                                  reloadData()
+                                }
+                              })
   
                             }
                           }]}>
                           <TouchableOpacity key={todos.id + 600} onPress={() => {
                             changeData(todos.list_id, todos.id, false)
 
-                            for (let i = 0; i < 5; i++) {
-                              this.componentDidMount()
-                            }
+                            for (let i = 0; i < 4; i++) {
+                                reloadData()
+                              }
                           }}>
                             
                               
@@ -174,7 +334,13 @@ export default class ToDoList extends React.Component<NavigationProps> {
             }
 
           </View>
-        </ScrollView>
+        </ScrollView> : 
+        <TouchableWithoutFeedback style={{ width:"100%", height:"100%" }} onPress={() => {
+          this.sheetRef.current.snapTo(1)
+        }}>
+          <View style={{ width:"100%", height:"100%" }}></View>
+        </TouchableWithoutFeedback>
+        }
 
       <Provider>
         <Portal>
@@ -184,7 +350,11 @@ export default class ToDoList extends React.Component<NavigationProps> {
               this.setState({
                 isEdit: true
               })
-              this.props.navigation.navigate('NewTodosScreen')
+              this.props.navigation.navigate('NewTodosScreen', {
+                resetData: () => {
+                  reloadData()
+                }
+              })
             }}
             style={{
               position: 'absolute',
@@ -199,6 +369,28 @@ export default class ToDoList extends React.Component<NavigationProps> {
 
 
         <StatusBar hidden={false}/>
+
+
+        <BottomSheet
+            ref={this.sheetRef}
+            initialSnap={0}
+            snapPoints={[this.state.isStartEnabled ? "40%" : 0, 0, 0]}
+            borderRadius={20}
+            enabledGestureInteraction={true}
+            renderContent={this.state.isStartEnabled ? this.state.renderContent : this.state.renderFaceContent}
+            onOpenStart= {() => {
+              this.setState({
+                isStartEnabled: true
+              })
+            }}
+            onCloseEnd= {() => {
+              this.setState({
+                isStartEnabled: false
+              })
+            }}
+        >
+          <View style={styles.container} ></View>
+        </BottomSheet>
       </SafeAreaView>
     );
   }

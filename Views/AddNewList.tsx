@@ -1,18 +1,42 @@
-import React, { Component } from 'react';
-import { StyleSheet, SafeAreaView, View, TextInput} from 'react-native';
-import GLOBAL from '../Models/GLOBAL';
+import React from 'react';
+import { StyleSheet, SafeAreaView, View, TextInput, TouchableOpacity, Alert} from 'react-native';
+import { createList } from "../services/ToDoList/index"
+import NavigationProps from "../Models/NavigationModel"
+import { List } from 'react-native-paper';
+
+
 import "reflect-metadata";
 
 
 
-export default class AddNewList extends Component{
+export default class AddNewList extends React.Component<NavigationProps>{
     state = {
         text: ""
     }
+    componentDidMount(){
+      this.props.navigation.setOptions({
+        headerRight: () => (
+          <TouchableOpacity onPress={() => {
+              if (this.state.text.trim() === "") {
+                  Alert.alert("Ошибка", "Текстовое поле пустое ! ") 
+              }else{
+                  createList(this.state.text)
+
+                  for (let i = 0; i < 5; i++) {
+                    this.props.route.params.resetData()
+                  }
+                  this.props.navigation.goBack()
+              }
+          }}>
+          <List.Icon color="#146E90" icon="check" />
+          
+          </TouchableOpacity>
+          
+      )
+      })
+    }
 
     render(){
-
-      GLOBAL.screen3 = this
 
     
         return(
